@@ -3,20 +3,14 @@
             [ring.mock.request :as mock]
             [stackcalc.handler :refer [app]]))
 
-(defn expect [route expected-status expected-body]
+(defn- expect [route expected-status expected-body]
   (let [response (app (mock/request :get route))]
     (t/is (= (:status response) expected-status))
     (t/is (= (:body response) expected-body))))
 
 (t/deftest test-app
   (t/testing "main route"
-    (let [response (app (mock/request :get "/calc/1/push/10"))]
-      (t/is (= (:status response) 200))
-      (t/is (= (:body response) "10"))))
-
-  (t/testing "not-found route"
-    (let [response (app (mock/request :get "/invalid"))]
-      (t/is (= (:status response) 404))))
+    (expect "/calc/1/push/10" 200 "10"))
   (t/testing
    "exercise scenario"
     (expect "/calc/1/push/1" 200 "1")
@@ -34,5 +28,10 @@
    "divide by zero"
     (expect "/calc/1/push/1" 200 "1")
     (expect "/calc/1/push/0" 200 "0")
-    (expect "/calc/1/divide" 400 "Divide by zero")))
+    (expect "/calc/1/divide" 400 "Divide by zero"))
+  (t/testing "not-found route"
+    (let [response (app (mock/request :get "/invalid"))]
+      (t/is (= (:status response) 404)))))
+
+
 
